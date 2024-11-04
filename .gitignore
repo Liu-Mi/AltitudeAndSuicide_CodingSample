@@ -2,6 +2,7 @@
 # Ignore output files
 tables/
 figures/
+data/
 
 # Generic rules for LaTeX, R and Visual Studio Code
 # Created by https://www.toptal.com/developers/gitignore/api/r,visualstudiocode,latex

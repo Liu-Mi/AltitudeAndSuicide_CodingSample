@@ -19,7 +19,8 @@ plot_suicide_against_altitude <- function(y_var, data) {
 str(suicide_data)
 summary(suicide_data)
 
-# Filter data
+# Filter data and create variable
+suicide_data <- suicide_data %>% mutate(share_firearms_suicides = suicide_firearms_rate / suicide_overall_rate)
 suicide_data_no_nas <- suicide_data %>% filter(if_all(starts_with("suicide"), ~ !is.na(.x)))
 
 ### Plot dependent variables against altitude
@@ -45,3 +46,53 @@ plots_ind_list <- plot_independent_variables %>% lapply(plot_against_altitude, d
 png("figures/covariates_vs_altitude.png", width = 800, height = 800)
 grid.arrange(grobs = plots_ind_list, ncol = 5)
 dev.off()
+
+# Mapping
+
+#import shapefile
+counties_shape <- st_read("data/census/county_shapefile")
+
+counties_shape <- counties_shape %>% mutate(county_code = as.integer(paste0(STATE, COUNTY)))
+counties_shape <- counties_shape %>% select(c(geometry, county_code))
+
+#merge with main data
+mapping_data <- counties_shape %>% left_join(suicide_data, by = "county_code")
+
+#remove non contiguous US
+mapping_data <- mapping_data %>% filter(state != "Alaska" & state != "Hawaii" & state != "Puerto Rico")
+
+#Plot suicide rate
+ggplot(mapping_data) +
+  geom_sf(aes(fill = suicide_overall_rate), linewidth = 0.001) +
+  scale_fill_viridis_c(name = "Suicide rate", option = "rocket") +
+  labs(title = "Suicide Rate of US Counties") +
+  theme_minimal()
+
+#Set width for slides
+slide_width <- 10  # inches
+slide_height <- 7.5  # inches
+
+# Export the plot as a PNG
+ggsave(
+  filename = "figures/suicide_map.png",
+  plot = last_plot(),  # If this is the last plot you created
+  width = slide_width,
+  height = slide_height,
+  dpi = 300  # High resolution for presentations
+)
+
+#Plot altitude
+ggplot(mapping_data) +
+  geom_sf(aes(fill = altitude), linewidth = 0.001) +
+  scale_fill_viridis_c(name = "Avg Altitude (m)", option = "rocket", trans = "sqrt") +
+  labs(title = "Altitude of US Counties") +
+  theme_minimal()
+
+#Export
+ggsave(
+  filename = "figures/altitude_map.png",
+  plot = last_plot(),  # If this is the last plot you created
+  width = slide_width,
+  height = slide_height,
+  dpi = 300  # High resolution for presentations
+)

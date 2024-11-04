@@ -3,7 +3,7 @@
 # Function to create WLS model with all variables in data as predictors
 suicide_lm_model <- function(data, response_var, predictor_vars, interaction_terms = c(), omitted_predictors = c()) {
     selected_data <- data %>% select(
-        -c(county, state, population, ends_with("rate"), all_of(omitted_predictors)),
+        -c(county, county_code, starts_with("state"), population, ends_with("rate"), all_of(omitted_predictors)),
         all_of(response_var), all_of(predictor_vars)
     )
     level_terms <- names(selected_data %>% select(-all_of(response_var)))
@@ -92,7 +92,7 @@ create_comparison_df <- function(model, altitude_brackets_stats_df, alpha = 0.05
             Estimate <- round(comparisons[[i]][[j]]$estimate, 3)
             Estimate <- ifelse(P_Value, paste0("$\\pmb{", Estimate, "}$"), Estimate)
             data.frame(
-                Bracket = names(altitude_brackets_stats)[i],
+                Bracket = altitude_brackets_stats_df$`Altitude Bracket`,
                 Type = comparison_types[j],
                 Estimate = Estimate,
                 Inc_to_next = avg_inc_in_alt[i],

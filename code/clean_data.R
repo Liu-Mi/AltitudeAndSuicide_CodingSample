@@ -212,6 +212,7 @@ suicide_data <- suicide_data %>%
 
 
 ### Add state and county names for easier identification
+# Add state names
 suicide_data <- suicide_data %>%
     mutate(
         county_code_temp = county_code,
@@ -219,8 +220,8 @@ suicide_data <- suicide_data %>%
         state_code = str_sub(str_pad(as.character(county_code_temp), width = 5, pad = "0", side = "left"), start = 1, end = 2)
     ) %>%
     left_join(fips_codes, by = c("county_code", "state_code")) %>%
-    mutate(state = state_name) %>%
-    select(-c(county_code_temp, state_name, county_code, state_code)) %>%
+    mutate(state = state_name, county_code = county_code_temp) %>%
+    select(-c(county_code_temp, state_name, state_code)) %>%
     unique()
 
 ### Write to consolidated CSV file
